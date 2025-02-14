@@ -1,0 +1,22 @@
+name: Deploy DAGs to Airflow
+
+on:
+  push:
+    branches:
+      - main  # ירוץ בכל push ל-main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Copy DAGs to Airflow Server
+        run: |
+          scp -o StrictHostKeyChecking=no -r dags/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ubuntu/airflow/airflow-dags/dags/
+
+      - name: Restart Airflow Scheduler
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker restart airflow_scheduler"
