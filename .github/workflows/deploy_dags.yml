@@ -15,7 +15,7 @@ jobs:
 
       - name: Copy DAGs to Airflow Server
         run: |
-          scp -o StrictHostKeyChecking=no -r dags/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ubuntu/airflow/airflow-dags/dags/
+          scp -o StrictHostKeyChecking=no -r dags/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/shubb/tavily/airflow-project/airflow-project/airflow-dags/dags/
 
       - name: Restart Airflow Scheduler
         run: |
