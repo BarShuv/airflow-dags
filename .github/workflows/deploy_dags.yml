@@ -3,7 +3,7 @@ name: Deploy DAGs to Airflow
 on:
   push:
     branches:
-      - main  # יתבצע בכל push ל-main
+      - main
 
 jobs:
   deploy:
@@ -16,15 +16,8 @@ jobs:
       - name: Upload DAGs to Airflow
         run: |
           for file in dags/*.py; do
-            curl -X PUT "${{ secrets.AIRFLOW_URL }}/api/v1/dags/$(basename $file .py)/dagCode" \
+            curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags/example_dag/dagRuns" \
+                 -H "Content-Type: application/json" \
                  --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}" \
-                 -H "Content-Type: text/plain" \
-                 --data-binary @"$file"
-          done
-
-      - name: Refresh DAGs in Airflow
-        run: |
-          for file in dags/*.py; do
-            curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags/$(basename $file .py)/refresh" \
-                 --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}"
+                 --data '{"conf": {}}'
           done
