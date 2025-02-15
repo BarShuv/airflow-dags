@@ -1,4 +1,3 @@
-
 name: Deploy DAGs to Airflow
 
 on:
@@ -11,22 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-
       - name: Checkout Repository
         uses: actions/checkout@v3
-      - name: Test SSH connection
-        run: ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo 'SSH connection successful'"
-      - name: Setup SSH Key
+
+      - name: Upload DAGs to Airflow
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-      - name: Copy DAGs to Airflow Server
-        run: |
-          scp -o StrictHostKeyChecking=no -r dags/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/shubb/tavily/airflow-project/airflow-project/airflow-dags/dags/
+          curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags" \
+               --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}" \
+               -H "Content-Type: application/json" \
+               -d '{}'
 
       - name: Restart Airflow Scheduler
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker restart airflow_scheduler"
+          curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags/default_dag/refresh" \
+               --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}"
