@@ -17,8 +17,24 @@ jobs:
         run: |
           for file in dags/*.py; do
             dag_id=$(basename "$file" .py)
-            curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags/$dag_id/dagRuns" \
-                 -H "Content-Type: application/json" \
-                 --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}" \
-                 --data '{"conf": {}}'
+
+            # בדיקה אם ה-DAG קיים
+            response=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${{ secrets.AIRFLOW_URL }}/api/v1/dags/$dag_id" \
+                --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}")
+
+            if [ "$response" -eq 404 ]; then
+              echo "DAG $dag_id לא נמצא. מנסה ליצור אותו מחדש..."
+              
+              # יצירת DAG חדש ב-Airflow
+              curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags" \
+                   -H "Content-Type: application/json" \
+                   --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}" \
+                   -d '{"dag_id": "'$dag_id'", "is_paused": false, "is_active": true}'
+            else
+              echo "DAG $dag_id כבר קיים."
+            fi
+
+            # רענון ה-DAG
+            curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags/$dag_id/refresh" \
+                 --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}"
           done
