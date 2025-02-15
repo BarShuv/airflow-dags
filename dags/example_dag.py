@@ -20,7 +20,7 @@ dag = DAG(
 )
 
 def print_hello():
-    print("Hello, Airflow!")
+    print("Hello, Airflow! 2")
 
 task1 = PythonOperator(
     task_id="print_hello",
