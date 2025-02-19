@@ -3,7 +3,7 @@ name: Deploy DAGs to Airflow
 on:
   push:
     branches:
-      - main  # ירוץ בכל push ל-main
+      - main 
 
 jobs:
   deploy:
@@ -19,9 +19,9 @@ jobs:
               dag_id=$(basename "$file" .py)
               echo "🔹 Running DAG: $dag_id"
 
-              curl -X POST "https://YOUR_NGROK_URL/api/v1/dags/$dag_id/dagRuns" \
+              curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags/$dag_id/dagRuns" \
                   -H "Content-Type: application/json" \
-                  --user "admin:admin" \
+                  --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}" \
                   --data '{"conf": {}}' \
                   -v  
               
