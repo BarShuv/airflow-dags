@@ -16,9 +16,15 @@ jobs:
       - name: Upload DAGs to Airflow
         run: |
           for file in dags/*.py; do
-            dag_id=$(basename "$file" .py)
-            curl -X POST "${{ secrets.AIRFLOW_URL }}/api/v1/dags/$dag_id/dagRuns" \
-                 -H "Content-Type: application/json" \
-                 --user "${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASSWORD }}" \
-                 --data '{"conf": {}}'
+              dag_id=$(basename "$file" .py)
+              echo "🔹 Running DAG: $dag_id"
+
+              curl -X POST "https://YOUR_NGROK_URL/api/v1/dags/$dag_id/dagRuns" \
+                  -H "Content-Type: application/json" \
+                  --user "admin:admin" \
+                  --data '{"conf": {}}' \
+                  -v  
+              
+              echo "✅ Finished processing DAG: $dag_id"
+              echo "--------------------------------"
           done
